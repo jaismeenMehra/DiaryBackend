@@ -8,7 +8,7 @@ const connectToMongo =  async ()=>{
 try{
 
     await mongoose.connect(mongoURI);
-    console.log("connected to mongo and refactored sucessful");
+    console.log("connected to mongo sucessfully");
 }
 catch(error){
     console.log(error);
