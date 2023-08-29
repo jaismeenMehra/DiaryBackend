@@ -5,10 +5,11 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 
+// dsecret signature
+const JWT_SECRET_SIGN =  "abc";
 
-// create a user using: POST "/api/auth/createuser". Login not required 
-
-router.post('/createuser',[
+// create a user using: POST "/api/auth/signup". Login not required 
+router.post('/signup',[
     // body('name').isLength({min:5}),
     // body('email').isEmail(),
     // body('password').isLength({min:8}),
@@ -21,7 +22,6 @@ router.post('/createuser',[
 
     const errors = validationResult(req);
     // const JWT_SECRET_SIGN =  process.env.AUTHENTICATION_SECRET_KEY; this is not working needs to be debug leaving for now
-    const JWT_SECRET_SIGN =  "abc";
     if(!errors.isEmpty()){
         return res.status(400).json({errors:errors.array()});
     }
@@ -72,7 +72,7 @@ router.post('/createuser',[
 
     catch(error){
         console.error(error.message);
-        res.status(500).send('Server Error');
+        res.status(500).send("It's not you , It's us \n Server Error.");
 
     }
 
@@ -83,6 +83,56 @@ router.post('/createuser',[
     //     password: req.body.password,
     //     email: req.body.email,
     //     }).then(user => res.json(user));
+
+});
+
+
+// Authenticate a user using: POST "/api/auth/login". Login not required
+router.post('/login',
+
+[body('email','Enter a valid email').isEmail(),
+body('password','Password can not be blank').exists()],
+
+async (req,res) =>{
+    // checking for validation errors
+    const errors = validationResult(req);
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors:errors.array()});
+    }
+
+    const {email, password} = req.body;
+
+    try{
+        // Checking if  user exists
+        const existingUser = await User.findOne({email});
+        if(!existingUser){
+            return res.status(400).json({errors: [{msg:'Please try to login with correct credentials. If not registered then sign up to access the platform \'s features.'}]})
+        }
+
+
+        // Compairing eneterd password with the user's actual password
+        const passwordCompare = await bcrypt.compare(password,existingUser.password);
+        if(!passwordCompare){
+            return res.status(400).json({error: "Please try to login with correct credentials"})
+        }
+
+        const data = {
+            user:{
+                id: existingUser.id,
+            }
+        }
+
+        const authToken = jwt.sign(data,JWT_SECRET_SIGN);
+        res.json({authToken});
+
+
+    }
+    catch(error){
+        console.error(error.message);
+        res.status(500).send("It's not you , It's us \n Server Error.")
+
+    }
+
 
 });
 
