@@ -4,11 +4,12 @@ const { body, validationResult } = require('express-validator');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
+const fetchuser  = require('../middleware/fetchuser');
 
 // dsecret signature
 const JWT_SECRET_SIGN =  "abc";
 
-// create a user using: POST "/api/auth/signup". Login not required 
+//  ROUTE 1 : create a user using: POST "/api/auth/signup". Login not required 
 router.post('/signup',[
     // body('name').isLength({min:5}),
     // body('email').isEmail(),
@@ -87,7 +88,7 @@ router.post('/signup',[
 });
 
 
-// Authenticate a user using: POST "/api/auth/login". Login not required
+// ROUTE 2 : Authenticate a user using: POST "/api/auth/login". Login not required
 router.post('/login',
 
 [body('email','Enter a valid email').isEmail(),
@@ -135,6 +136,25 @@ async (req,res) =>{
 
 
 });
+
+
+// ROUTE 3 : Get loggedin user details using: POST "/api/auth/userdetails". Login required
+
+router.post('/userdetails', fetchuser,async (req,res)=>{
+
+    try {
+        const userId = req.user.id;
+        // we can not select and send password of user that is why - password
+        const loggedinUser = await User.findById(userId).select("-password");
+        res.json(loggedinUser);
+
+        
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send("It's not you , It's us \n Server Error.")
+    }
+
+} )
 
 
 module.exports = router; 
