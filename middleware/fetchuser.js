@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET_SIGN = "abc";
 
 //middleware function to authenticate user 
+// next--> used to call the function next to middleware
 const fetchuser = (req,res,next) =>{
     // Get the user from the jwt token and add id to req object 
     const token = req.header('auth-token');
@@ -14,6 +15,7 @@ const fetchuser = (req,res,next) =>{
     try{
 
         const data = jwt.verify(token,JWT_SECRET_SIGN);
+        //  This will make the user object available to all middleware and route handlers that are executed after this middleware.
         req.user = data.user;
         next();
     }

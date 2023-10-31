@@ -1,12 +1,13 @@
 const express = require('express');
 const User = require('../models/User');
+const dotenv = require('dotenv').config()
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 const fetchuser  = require('../middleware/fetchuser');
 
-// dsecret signature
+// secret signature
 const JWT_SECRET_SIGN =  "abc";
 
 //  ROUTE 1 : create a user using: POST "/api/auth/signup". Login not required 
@@ -20,9 +21,10 @@ router.post('/signup',[
     body('password','Password is not strong, atleast it should have 8 characters').isLength({min:8}),
 
 ], async (req,res)=>{
-
+    
     const errors = validationResult(req);
     // const JWT_SECRET_SIGN =  process.env.AUTHENTICATION_SECRET_KEY; this is not working needs to be debug leaving for now
+    // console.log('JWT_SECRET_SIGN:', JWT_SECRET_SIGN);
     if(!errors.isEmpty()){
         return res.status(400).json({errors:errors.array()});
     }
@@ -56,7 +58,6 @@ router.post('/signup',[
             }
         }
         
-        // console.log('JWT_SECRET_SIGN:', JWT_SECRET_SIGN);
         
         const authToken = jwt.sign(data, JWT_SECRET_SIGN);
         // const authToken = jwt.sign(Payload data, secret key);
