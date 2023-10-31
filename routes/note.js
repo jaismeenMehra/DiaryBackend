@@ -8,8 +8,8 @@ const {body, validationResult} = require('express-validator');
 router.get('/fetchallnotes',fetchuser,async (req,res)=>{
 
 try{    // as middleware is used req.user will have user 
-   const Note = await Note.find({user:req.user.id})
-    res.json(Note);
+   const note = await Note.find({user:req.user.id})
+    res.json(note);
 }
 catch(error){
     console.error(error.message);
@@ -68,13 +68,16 @@ router.patch('/updatenote/:id',fetchuser,[
         if(description){newNote.description = description};
         if(tag){newNote.tag = tag};
 
-        // Finding the note to be updated and updating it
+        // Find the note to be updated
         let note = await Note.findById(req.params.id);
         if(!note){return res.status(404).send("Not Found")}
+
+        // Allow updation access to user, if authorized
         if(note.user.toString() !== req.user.id){
             return res.status(401).send("Access Denied");
         }
 
+        // Update note
         note = await Note.findByIdAndUpdate(req.params.id, {$set: newNote}, {new:true})
         res.json({note});
 
@@ -88,9 +91,22 @@ router.patch('/updatenote/:id',fetchuser,[
 });
 
 
-// ROUTE 4 : deleting an existing note using: DELETE "/api/Note/deletenote". Login required
+// ROUTE 4 : deleting an existing note using: DELETE "/api/note/deletenote". Login required
 router.delete('/deletenote/:id',fetchuser, async(req, res)=>{
-        try {
+    try {
+
+        // Finding the note to be deleted and deleting it
+        let note = await Note.findById(req.params.id);
+        if(!note){return res.status(404).send("Not Found")}
+
+        // Allow deletion access to user, if authorized
+        if(note.user.toString() !== req.user.id){
+            return res.status(401).send("Access Denied");
+        }
+
+        // Delete note
+        note = await Note.findByIdAndDelete(req.params.id)
+        res.json({"Success" : "Note has been deleted."})
 
             
             
